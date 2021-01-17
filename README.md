@@ -17,8 +17,8 @@ Install i3lock-fancy
 
 ```
 $ git clone https://github.com/meskarune/i3lock-fancy.git ~/.scripts/i3lock-fancy
-cd ~/.scripts/i3lock-fancy
-sudo make install
+$ cd ~/.scripts/i3lock-fancy
+$ sudo make install
 ```
 Set service to lock screen after suspend/sleep
 
