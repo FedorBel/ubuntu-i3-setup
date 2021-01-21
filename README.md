@@ -9,7 +9,7 @@ My ubuntu setup with i3 window manager.
 $ sudo apt update && sudo apt install i3
 ```
 
-Relog with i3.
+**Relog with i3.**
 
 ### Screen lock
 
@@ -27,15 +27,10 @@ $ sudo mv lockscreen.service /etc/systemd/system/
 $ sudo systemctl enable screenlock.service 
 ```
 
-
-
 ### Take screenshots
 
 ```
 $ sudo apt install xclip imagemagic
 ```
-
-### Change volume
-
 
 ### Install config files
