@@ -32,9 +32,24 @@ silent! while 0
   set nocompatible
 silent! endwhile
 
-set encoding=utf-8
-set number relativenumber
+set relativenumber
 
+" Copy - Paste.
+nnoremap <C-y> "+y
+vnoremap <C-y> "+y
+nnoremap <C-p> "+gP
+vnoremap <C-p> "+gP
+
+nnoremap <C-A> ggVG
+
+" Cursor shape.
+let &t_SI = "\<Esc>[5 q"
+let &t_SR = "\<Esc>[4 q"
+let &t_EI = "\<Esc>[1 q"
+
+" Cursor color.
+let &t_EI .= "\<Esc>]12;white\x7"
+	
 " Allow backspacing over everything in insert mode.
 set backspace=indent,eol,start
 
@@ -142,20 +157,3 @@ if has('langmap') && exists('+langremap')
   " compatible).
   set nolangremap
 endif
-
-" Set up vertical vs block cursor for insert/normal mode
-if &term =~ "screen."
-    let &t_ti.="\eP\e[1 q\e\\"
-    let &t_SI.="\eP\e[5 q\e\\"
-    let &t_EI.="\eP\e[1 q\e\\"
-    let &t_te.="\eP\e[0 q\e\\"
-else
-    let &t_ti.="\<Esc>[1 q"
-    let &t_SI.="\<Esc>[5 q"
-    let &t_EI.="\<Esc>[1 q"
-    let &t_te.="\<Esc>[0 q"
-endif
-
-:inoremap <C-v> <ESC>"+pa
-:vnoremap <C-c> "+y
-:vnoremap <C-d> "+d
