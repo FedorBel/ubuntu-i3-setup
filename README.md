@@ -33,4 +33,8 @@ $ sudo systemctl enable screenlock.service
 $ sudo apt install xclip imagemagic
 ```
 
+### Open gnome-keyring
+
+https://wiki.archlinux.org/title/GNOME/Keyring
+
 ### Install config files
