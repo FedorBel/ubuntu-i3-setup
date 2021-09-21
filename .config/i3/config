@@ -9,7 +9,8 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
-set $term --no-startup-id i3-sensible-terminal
+
+set $term --no-startup-id st
 set $browser firefox
 set $mod Mod4
 
@@ -19,26 +20,40 @@ font pango:monospace 8
 for_window [class="^.*"] border pixel 2
 gaps inner 10
 gaps outer 0
+
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
 #font pango:DejaVu Sans Mono 8
 
-# Before i3 v4.8, we used to recommend this one as the default:
-# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
-# The font above is very space-efficient, that is, it looks good, sharp and
-# clear in small sizes. However, its unicode glyph coverage is limited, the old
-# X core fonts rendering does not support right-to-left and this being a bitmap
-# font, it doesn’t scale on retina/hidpi displays.
+# The combination of xss-lock, nm-applet and pactl is a popular choice, so
+# they are included here as an example. Modify as you see fit.
+
+# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
+# screen before suspend. Use loginctl lock-session to lock your screen.
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock-fancy -t "" --nofork 
+
+# NetworkManager is the most popular way to manage wireless networks on Linux,
+# and nm-applet is a desktop environment-independent system tray GUI for it.
+exec --no-startup-id nm-applet 
+
+# Use pactl to adjust volume in PulseAudio.
+set $refresh_i3status killall -SIGUSR1 i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec i3-sensible-terminal
-
+bindsym $mod+Return exec $term
+# start terminal as floating wndow
+bindsym $mod+shift+Return exec $term -c floating_term
+for_window [class="floating_term"] floating enable
 # kill focused window
-bindsym $mod+Shift+q kill
-bindsym $mod+Shift+slash kill
+bindsym $mod+q kill
+#bindsym $mod+Shift+slash kill
 
 # start dmenu (a program launcher)
 bindsym $mod+d exec dmenu_run
@@ -103,16 +118,16 @@ bindsym $mod+slash split vertical ;; exec $term
 bindsym $mod+Tab workspace back_and_forth
 bindsym $mod+backslash workspace back_and_forth
 
-set $ws1 "1"
+set $ws1 "1: "
 set $ws2 "2: Firefox"
-set $ws3 "3: CubeIde"
+set $ws3 "3: Autoware"
 set $ws4 "4: VSCode"
-set $ws5 "5"
+set $ws5 "5: GitKraken"
 set $ws6 "6"
 set $ws7 "7"
 set $ws8 "8"
 set $ws9 "9"
-set $ws10 "10"
+set $ws10 "10: Telegram"
 
 # switch to workspace
 bindsym $mod+1		workspace $ws1
@@ -139,8 +154,9 @@ bindsym $mod+Shift+9	move container to workspace $ws9
 bindsym $mod+Shift+0	move container to workspace $ws10
 
 assign [class="Firefox"] $ws2
-assign [class="STM32CubeIDE"] $ws3
-assign [class="Code"] $ws4
+#assign [class="Code"] $ws4
+assign [class="GitKraken"] $ws5
+assign [class="TelegramDesktop"] $ws10
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+F2 restart
@@ -177,7 +193,16 @@ bindsym $mod+r mode "resize"
 # finds out, if available)
 bar {
 	position top
-        status_command i3status -c ~/.config/i3/.i3status.conf
+    status_command i3status -c ~/.config/i3/.i3status.conf
+    colors {
+            background #696969
+            statusline #ffffff
+    
+            focused_workspace  #ffffff #285577
+            active_workspace   #ffffff #333333
+            inactive_workspace #888888 #222222
+            urgent_workspace   #ffffff #900000
+        }
 }
 
 # Set floating window size
@@ -187,53 +212,36 @@ floating_maximum_size 1500 x 1400
 # focus follows mouse movements
 focus_follows_mouse no
 
-bindsym $mod+b exec $browser
-
-# run vs_code
-bindsym $mod+shift+c exec code
-bindsym $mod+shift+s exec /opt/st/stm32cubeide_1.5.1/stm32cubeide
+# Shortcuts
+bindsym $mod+shift+b exec $browser
+bindsym $mod+shift+c exec i3-msg workspace $ws4; exec code;
+bindsym $mod+shift+g exec gitkraken 
 
 # lock screen
 # bindsym $mod+shift+x exec i3lock --color=000000
-bindsym $mod+shift+x exec i3lock-fancy -t ""
+bindsym $mod+shift+x exec i3lock-fancy -t "" && sleep 5 && xset s activate 
 
 # take a screenshot of a screen region and copy it to a clipboard
-bindsym --release Shift+Print exec "~/.scripts/scregcp -s ~/Pictures/screenshots/"
+bindsym --release Shift+Print exec "~/scripts/scregcp -s ~/Pictures/screenshots/"
 
 # take a screenshot of a whole window and copy it to a clipboard
-bindsym --release Print exec "~/.scripts/scregcp ~/Pictures/screenshots/"
+bindsym --release Print exec "~/scripts/scregcp ~/Pictures/screenshots/"
 
 # set wallpaper
-exec_always feh --bg-scale ~/Pictures/wallpapers/pexels-photo-1367192.jpeg
+exec_always feh --bg-scale ~/Pictures/wallpapers/wallpaper
 
-## Volume control
-
-# Path to volume control, without trailing slash
-set $volumepath ~/.scripts
-
-# Command for the status line
-#   ie: i3blocks, i3status
-set $statuscmd i3status
-
-# Signal used to update the status line
-#   i3blocks uses SIGRTMIN+10 by default
-#   i3status uses SIGUSR1 by default
-set $statussig SIGUSR1
-
-# Amount to increase/decrease volume as a percentage
-set $volumestep 5
-
-# pulseaudio-utils settings
-#
-# Symbolic name for sink (numeric index not supported)
-#   Recommended: comment out this setting and omit the -s option to use default sink
-#   List sink names: pacmd list-sinks | awk -F "[<>]" '/^\s+name: <.*>/{print $2}'
-#set $sinkname alsa_output.pci-0000_00_1b.0.analog-stereo
-
-# Using pulseaudio-utils (append "-s $sinkname" without quotes to override default sink)
-bindsym XF86AudioRaiseVolume exec --no-startup-id $volumepath/volume -n -t $statuscmd -u $statussig up $volumestep
-bindsym XF86AudioLowerVolume exec --no-startup-id $volumepath/volume -n -t $statuscmd -u $statussig down $volumestep
-bindsym XF86AudioMute exec --no-startup-id $volumepath/volume -n -t $statuscmd -u $statussig mute
+# Volume control
+exec --no-startup-id volumeicon 
 
 # Autostart
 exec picom
+
+#Polybar
+# exec_always --no-startup-id ~/.config/polybar/launch.sh &
+
+# For ssh-agent
+exec_always ~/.config/i3/scripts/gnome-keyring.sh
+
+# Open terminal on startup
+exec --no-startup-id $term
+
